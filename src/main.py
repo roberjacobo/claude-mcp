@@ -1,12 +1,18 @@
+import sys
+import os
+
+# --- FIX: Agregamos la raíz del proyecto al Path de Python ---
+# Esto permite que el script encuentre el módulo 'src' aunque esté dentro de él
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# -------------------------------------------------------------
+
 from mcp.server.fastmcp import FastMCP
 from src.rag_engine import RagEngine
 
-# Initialize the MCP Server
-# "OneDrive Knowledge Base" is the name Claude will see internally
+# Inicializamos el servidor MCP
 mcp = FastMCP("OneDrive Knowledge Base")
 
-# Initialize our RAG engine (Database + Models)
-# We do this globally so it loads only once when the server starts
+# Inicializamos el motor RAG globalmente
 rag = RagEngine()
 
 @mcp.tool()
@@ -18,8 +24,7 @@ def ask_onedrive(question: str) -> str:
     Args:
         question: The full question or search query related to the documents.
     """
-    # 1. Search in the vector database
-    # We retrieve 5 chunks to give Claude enough context
+    # 1. Buscar en la base de datos
     results = rag.search(question, n_results=5)
 
     documents = results['documents'][0]
@@ -27,12 +32,10 @@ def ask_onedrive(question: str) -> str:
     if not documents:
         return "No relevant information found in the documents."
 
-    # 2. Format the context
-    # We join the found fragments into a single text block with separators
+    # 2. Formatear la respuesta
     context = "\n\n---\n\n".join(documents)
 
     return f"Here is the relevant information found in the documents:\n\n{context}"
 
 if __name__ == "__main__":
-    # Run the server using standard input/output (stdio)
     mcp.run(transport='stdio')
