@@ -1,15 +1,10 @@
------
-
-### `README.md`
-
-````markdown
 # Claude MCP: Local RAG with OneDrive Support
 
 This Model Context Protocol (MCP) server allows Claude to access, index, and retrieve information from your private documents (Local files and OneDrive).
 
 It uses a **RAG (Retrieval-Augmented Generation)** architecture with local embeddings, ensuring your data remains private and is processed efficiently on your machine.
 
-## Architecture
+## 🏗 Architecture
 
 - **Manager:** `uv` (Fast Python package installer and resolver)
 - **Embeddings:** `sentence-transformers` (Local execution, no API costs)
@@ -19,114 +14,96 @@ It uses a **RAG (Retrieval-Augmented Generation)** architecture with local embed
 ## 🚀 Prerequisites
 
 1. **Python 3.11+**
-2. **uv** (An extremely fast Python package manager)
-   - *MacOS/Linux/WSL2:* `curl -LsSf https://astral.sh/uv/install.sh | sh`
-   - *Windows:* `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
+2. **uv** (Python package manager)
+3. **Claude Code** (CLI) or **Claude Desktop App**
 
----
+## 🛠️ Installation
 
-## 🛠️ Installation & Setup
-
-Follow these steps to replicate the environment on your OS.
-
-### 1. Clone or Create Project
-```bash
-# If cloning
-git clone <repository-url>
-cd claude-mcp
-
-# If starting from scratch (already done if following the tutorial)
-uv init claude-mcp
-cd claude-mcp
+1. **Clone and Setup**
+   ```bash
+   git clone <repo-url>
+   cd claude-mcp
+   uv sync
 ````
 
-### 2\. Environment Setup
+2.  **Configuration**
+    Create a `.env` file in the root directory:
+    ```ini
+    # MODEL CONFIGURATION
+    EMBEDDING_MODEL=all-MiniLM-L6-v2
 
-#### 🍎 macOS / 🐧 Linux / 🦖 WSL2
-
-```bash
-# Create virtual environment
-uv venv --python 3.11
-
-# Activate environment
-source .venv/bin/activate
-
-# Install dependencies (will sync from pyproject.toml)
-uv sync
-```
-
-#### 🪟 Windows (PowerShell)
-
-```powershell
-# Create virtual environment
-uv venv --python 3.11
-
-# Activate environment
-.venv\Scripts\activate
-
-# Install dependencies
-uv sync
-```
+    # DATA SOURCES
+    # WSL2 Example: /mnt/c/Users/YourUser/OneDrive/Documents
+    # Mac/Linux Example: /home/user/documents
+    DATA_PATH=/path/to/your/documents
+    ```
 
 -----
 
-## ⚙️ Configuration
+## 🔄 Workflow
 
-Create a `.env` file in the root directory to manage your configuration and secrets.
+This project separates **Ingestion** (Writing to memory) from **Querying** (Reading from memory).
+
+### 1\. Ingest Data (Update Memory)
+
+Run this command whenever you add new files to your folder. It reads the files, chunks them, and updates the local vector database.
 
 ```bash
-# Copy the example file (if available)
-cp .env.example .env
+uv run ingest.py
 ```
 
-**Content of `.env`:**
+### 2\. Connect to Claude
 
-```ini
-# MODEL CONFIGURATION
-# Using local model (default)
-EMBEDDING_MODEL=all-MiniLM-L6-v2
+#### Option A: Claude Code (CLI) - Recommended
 
-# DATA SOURCES
-# Define the root path where your documents are located
-DOCS_PATH=./data
-# For OneDrive/SharePoint specific integrations (Future implementation)
-ONEDRIVE_FOLDER_ID=your_folder_id
+Run this command once to register the tool in your local Claude configuration:
+
+```bash
+claude mcp add onedrive-rag -- uv --directory $(pwd) run src/main.py
+```
+
+Then, simply ask Claude:
+
+> "Check my documents for the status of the project."
+
+#### Option B: Claude Desktop (GUI)
+
+Add this to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "onedrive-rag": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/absolute/path/to/claude-mcp",
+        "run",
+        "src/main.py"
+      ]
+    }
+  }
+}
 ```
 
 -----
-
-## 🏃‍♂️ Usage
-
-To start the MCP server:
-
-```bash
-# Using uv to run the entry point
-uv run mcp-server
-```
-
-Once running, you can configure Claude Desktop to connect to this server by editing your `claude_desktop_config.json`.
 
 ## 📦 Project Structure
 
 ```text
 claude-mcp/
 ├── .venv/               # Virtual environment
-├── data/                # Place your documents here for testing
+├── chroma_db/           # Local Vector Database (Ignored in Git)
 ├── src/                 # Source code
-│   ├── main.py          # Entry point
+│   ├── main.py          # MCP Server Entry Point
 │   └── rag_engine.py    # Logic for embeddings and retrieval
 ├── .env                 # Secrets and config
-├── pyproject.toml       # Dependencies managed by uv
+├── ingest.py            # Script to update the database
+├── pyproject.toml       # Dependencies
 └── README.md            # Documentation
 ```
 
-```
+## 🔧 Troubleshooting
 
-***
-
-### Siguiente Paso: Hacer realidad el README
-
-El README promete que el proyecto funciona con `uv sync` y que usa `sentence-transformers` y `chromadb`, pero **aún no hemos instalado esas librerías** en tu proyecto real.
-
-Para cumplir con lo que dice tu documentación y preparar el terreno para el código, ¿te parece bien si ejecutamos ahora el comando para instalar las dependencias del motor "Local"?
-```
+**"ModuleNotFoundError: No module named 'src'"**
+If you run the server manually, ensure you use `uv run src/main.py`. The code includes a `sys.path` fix to ensure imports work correctly regardless of the execution context.

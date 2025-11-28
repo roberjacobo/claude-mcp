@@ -27,6 +27,10 @@ def ask_onedrive(question: str) -> str:
     # 1. Buscar en la base de datos
     results = rag.search(question, n_results=5)
 
+    # Check if results is None or doesn't contain expected structure
+    if not results or 'documents' not in results or not results['documents']:
+        return "No relevant information found in the documents."
+
     documents = results['documents'][0]
 
     if not documents:
