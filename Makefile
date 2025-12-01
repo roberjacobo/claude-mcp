@@ -2,7 +2,7 @@
 
 .PHONY: help setup ingest server connect clean
 
-# Default target: Show help / Objetivo por defecto: Mostrar ayuda
+# Default target: Display available commands
 help:
 	@echo "🤖 Claude MCP - Available Commands:"
 	@echo "-----------------------------------"

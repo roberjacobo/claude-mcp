@@ -1,18 +1,17 @@
 import sys
 import os
 
-# --- FIX: Agregamos la raíz del proyecto al Path de Python ---
-# Esto permite que el script encuentre el módulo 'src' aunque esté dentro de él
+# Add project root to Python path to enable imports from src module
+# This allows the script to locate the 'src' module regardless of execution context
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-# -------------------------------------------------------------
 
 from mcp.server.fastmcp import FastMCP
 from src.rag_engine import RagEngine
 
-# Inicializamos el servidor MCP
+# Initialize MCP server for private document search
 mcp = FastMCP("OneDrive Knowledge Base")
 
-# Inicializamos el motor RAG globalmente
+# Initialize RAG engine globally for document retrieval
 rag = RagEngine()
 
 @mcp.tool()
@@ -24,7 +23,7 @@ def ask_onedrive(question: str) -> str:
     Args:
         question: The full question or search query related to the documents.
     """
-    # 1. Buscar en la base de datos
+    # Search vector database for relevant document chunks
     results = rag.search(question, n_results=5)
 
     # Check if results is None or doesn't contain expected structure
@@ -36,7 +35,7 @@ def ask_onedrive(question: str) -> str:
     if not documents:
         return "No relevant information found in the documents."
 
-    # 2. Formatear la respuesta
+    # Format retrieved chunks into cohesive response
     context = "\n\n---\n\n".join(documents)
 
     return f"Here is the relevant information found in the documents:\n\n{context}"
