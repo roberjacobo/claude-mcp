@@ -1,8 +1,8 @@
-# Claude MCP: Local RAG with OneDrive Support
+# Claude MCP: Private Knowledge Base
 
 ## What is this for?
 
-This project lets Claude search and answer questions about your personal documents (like PDFs, Word files, text files, etc.) stored on your computer or OneDrive.
+This project lets Claude search and answer questions about your personal documents (like PDFs, Word files, text files, etc.) stored anywhere on your computer.
 
 **How it works:**
 1. Point it at a folder with your documents
@@ -18,7 +18,7 @@ It's essentially giving Claude a "memory" of your personal documents, keeping ev
 
 ---
 
-This Model Context Protocol (MCP) server allows Claude to access, index, and retrieve information from your private documents (Local files and OneDrive).
+This Model Context Protocol (MCP) server allows Claude to access, index, and retrieve information from your private documents stored locally on your machine.
 
 It uses a **RAG (Retrieval-Augmented Generation)** architecture with local embeddings, ensuring your data remains private and is processed efficiently on your machine.
 
@@ -51,8 +51,9 @@ It uses a **RAG (Retrieval-Augmented Generation)** architecture with local embed
     EMBEDDING_MODEL=all-MiniLM-L6-v2
 
     # DATA SOURCES
-    # WSL2 Example: /mnt/c/Users/YourUser/OneDrive/Documents
+    # WSL2 Example: /mnt/c/Users/YourUser/Documents
     # Mac/Linux Example: /home/user/documents
+    # Works with any local folder (including synced cloud folders like OneDrive, Google Drive, etc.)
     DATA_PATH=/path/to/your/documents
     ```
 
@@ -77,7 +78,7 @@ uv run ingest.py
 Run this command once to register the tool in your local Claude configuration:
 
 ```bash
-claude mcp add onedrive-rag -- uv --directory $(pwd) run src/main.py
+claude mcp add private-kb -- uv --directory $(pwd) run src/main.py
 ```
 
 Then, simply ask Claude:
@@ -91,7 +92,7 @@ Add this to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "onedrive-rag": {
+    "private-kb": {
       "command": "uv",
       "args": [
         "--directory",
@@ -120,6 +121,20 @@ claude-mcp/
 ├── pyproject.toml       # Dependencies
 └── README.md            # Documentation
 ```
+
+## 🧹 Maintenance Commands
+
+**Clean cache files:**
+```bash
+make clean
+```
+Removes Python cache files (`__pycache__`, `*.pyc`, `*.pyo`) safely without affecting your indexed data.
+
+**Clean everything (including database):**
+```bash
+make clean-all
+```
+Removes cache files AND the entire ChromaDB database. **Warning:** This requires re-running `make ingest` to rebuild your knowledge base.
 
 ## 🔧 Troubleshooting
 

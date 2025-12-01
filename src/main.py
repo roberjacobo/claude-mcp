@@ -9,15 +9,15 @@ from mcp.server.fastmcp import FastMCP
 from src.rag_engine import RagEngine
 
 # Initialize MCP server for private document search
-mcp = FastMCP("OneDrive Knowledge Base")
+mcp = FastMCP("Private Knowledge Base")
 
 # Initialize RAG engine globally for document retrieval
 rag = RagEngine()
 
 @mcp.tool()
-def ask_onedrive(question: str) -> str:
+def ask_knowledge_base(question: str) -> str:
     """
-    Search in the user's private OneDrive documents/knowledge base to answer a question.
+    Search in the user's private knowledge base to answer a question.
     Use this tool when the user asks about their own files, reports, projects, or status.
 
     Args:

@@ -14,7 +14,7 @@ class RagEngine:
         # Initialize persistent ChromaDB client (creates 'chroma_db' folder for storage)
         self.chroma_client = chromadb.PersistentClient(path="./chroma_db")
         self.collection = self.chroma_client.get_or_create_collection(
-            name="onedrive_docs"
+            name="private_docs"
         )
 
         # Load embedding model from environment or use default

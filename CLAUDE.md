@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Model Context Protocol (MCP) server that provides Claude with RAG (Retrieval-Augmented Generation) capabilities for private documents. It uses local embeddings and vector search to query personal documents (OneDrive, local files) without sending data to external APIs.
+This is a Model Context Protocol (MCP) server that provides Claude with RAG (Retrieval-Augmented Generation) capabilities for private documents. It uses local embeddings and vector search to query personal documents stored on your machine without sending data to external APIs.
 
 **Key Technologies:**
 - **Package Manager:** `uv` (fast Python package installer)
@@ -31,10 +31,11 @@ make server                      # Same as above
 # Connect to Claude
 make connect                     # Register MCP server with Claude Code CLI
 # Manual registration:
-claude mcp add onedrive-rag -- uv --directory $(pwd) run src/main.py
+claude mcp add private-kb -- uv --directory $(pwd) run src/main.py
 
 # Maintenance
-make clean                       # Remove Python cache files
+make clean                       # Remove Python cache files only (safe)
+make clean-all                   # Remove cache + database (requires re-ingestion)
 make help                        # Show available Makefile commands
 ```
 
@@ -67,7 +68,7 @@ This project separates **data ingestion** (write) from **querying** (read):
 - `search(query, n_results)`: Vector similarity search
 
 **MCP Tool** (`src/main.py`):
-- `ask_onedrive(question)`: The single MCP tool exposed to Claude
+- `ask_knowledge_base(question)`: The single MCP tool exposed to Claude
 - Returns formatted context from top matching document chunks
 
 ## Important Path Handling
@@ -98,7 +99,7 @@ DATA_PATH=/path/to/your/documents
 
 - Location: `./chroma_db/` (gitignored)
 - Persistent storage: ChromaDB uses SQLite internally
-- Collection name: `onedrive_docs`
+- Collection name: `private_docs`
 - Chunk IDs format: `{file_path}_{chunk_index}`
 
 ## Workflow
@@ -119,7 +120,7 @@ DATA_PATH=/path/to/your/documents
 
 3. **Querying via Claude:**
    Ask Claude questions like: "What's the status of the project?" or "Search my documents for X"
-   Claude will automatically use the `ask_onedrive` tool.
+   Claude will automatically use the `ask_knowledge_base` tool.
 
 ## Development Notes
 
