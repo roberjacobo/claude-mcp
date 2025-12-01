@@ -1,5 +1,23 @@
 # Claude MCP: Local RAG with OneDrive Support
 
+## What is this for?
+
+This project lets Claude search and answer questions about your personal documents (like PDFs, Word files, text files, etc.) stored on your computer or OneDrive.
+
+**How it works:**
+1. Point it at a folder with your documents
+2. It reads and indexes them locally on your machine (no data sent to external servers)
+3. When you ask Claude a question, it can search through your documents and give you answers based on what's in your files
+
+**Example use case:**
+- You have project reports, meeting notes, and documentation scattered across files
+- Instead of manually searching through them, you just ask Claude: "What's the status of the project?" or "Find information about the budget in my documents"
+- Claude searches your indexed documents and gives you the answer
+
+It's essentially giving Claude a "memory" of your personal documents, keeping everything private and local to your machine.
+
+---
+
 This Model Context Protocol (MCP) server allows Claude to access, index, and retrieve information from your private documents (Local files and OneDrive).
 
 It uses a **RAG (Retrieval-Augmented Generation)** architecture with local embeddings, ensuring your data remains private and is processed efficiently on your machine.
