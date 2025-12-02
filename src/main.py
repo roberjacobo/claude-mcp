@@ -20,6 +20,19 @@ def ask_knowledge_base(question: str) -> str:
     Search in the user's private knowledge base to answer a question.
     Use this tool when the user asks about their own files, reports, projects, or status.
 
+    This knowledge base contains indexed documents including:
+    - Project documentation and overviews
+    - User manuals and technical guides
+    - Reports and status updates
+    - Meeting notes and personal files
+
+    Use this tool proactively when the user asks questions about:
+    - How something works in their projects
+    - Project specifications or requirements
+    - Status, progress, or timelines from their documents
+    - Technical details from manuals or guides
+    - Any information that might be in their personal documents
+
     Args:
         question: The full question or search query related to the documents.
     """
