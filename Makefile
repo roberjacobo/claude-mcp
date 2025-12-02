@@ -1,17 +1,18 @@
 # Makefile for Claude MCP Private Knowledge Base
 
-.PHONY: help setup ingest server connect clean clean-all
+.PHONY: help setup ingest server connect connect-global clean clean-all
 
 # Default target: Display available commands
 help:
 	@echo "🤖 Claude MCP - Available Commands:"
 	@echo "-----------------------------------"
-	@echo "make setup    - Install dependencies with uv"
-	@echo "make ingest   - Update knowledge base from local documents (Run this after adding files)"
-	@echo "make server   - Run the MCP server manually (for debugging)"
-	@echo "make connect  - Register this tool with Claude Code (CLI)"
-	@echo "make clean    - Remove Python cache files only"
-	@echo "make clean-all - Remove cache files AND database (requires re-ingestion)"
+	@echo "make setup         - Install dependencies with uv"
+	@echo "make ingest        - Update knowledge base from local documents (Run this after adding files)"
+	@echo "make server        - Run the MCP server manually (for debugging)"
+	@echo "make connect       - Register this tool with Claude Code (current project only)"
+	@echo "make connect-global - Register this tool with Claude Code (available in ALL projects)"
+	@echo "make clean         - Remove Python cache files only"
+	@echo "make clean-all     - Remove cache files AND database (requires re-ingestion)"
 
 setup:
 	@echo "Installing dependencies..."
@@ -26,8 +27,12 @@ server:
 	uv run src/main.py
 
 connect:
-	@echo "Connecting to Claude Code..."
+	@echo "Connecting to Claude Code (local project only)..."
 	claude mcp add private-kb -- uv --directory $$(pwd) run src/main.py
+
+connect-global:
+	@echo "Connecting to Claude Code (globally for all projects)..."
+	claude mcp add --scope user private-kb -- uv --directory $$(pwd) run src/main.py
 
 clean:
 	@echo "Cleaning Python cache files..."

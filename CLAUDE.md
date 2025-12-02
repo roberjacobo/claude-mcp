@@ -29,9 +29,11 @@ uv run src/main.py               # Start MCP server manually (for debugging)
 make server                      # Same as above
 
 # Connect to Claude
-make connect                     # Register MCP server with Claude Code CLI
+make connect                     # Register MCP server (current project only)
+make connect-global              # Register MCP server (available in ALL projects) - RECOMMENDED
 # Manual registration:
-claude mcp add private-kb -- uv --directory $(pwd) run src/main.py
+claude mcp add private-kb -- uv --directory $(pwd) run src/main.py  # Local
+claude mcp add --scope user private-kb -- uv --directory $(pwd) run src/main.py  # Global
 
 # Maintenance
 make clean                       # Remove Python cache files only (safe)
@@ -109,7 +111,9 @@ DATA_PATH=/path/to/your/documents
    uv sync
    # Create .env with DATA_PATH
    uv run ingest.py
-   make connect
+   make connect-global  # Recommended: Available in all projects
+   # OR
+   make connect         # Local: Only available in this project
    ```
 
 2. **Adding New Documents:**

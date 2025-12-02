@@ -75,13 +75,21 @@ uv run ingest.py
 
 #### Option A: Claude Code (CLI) - Recommended
 
-Run this command once to register the tool in your local Claude configuration:
-
+**Global Installation (Available in ALL projects):**
 ```bash
+make connect-global
+# OR manually:
+claude mcp add --scope user private-kb -- uv --directory $(pwd) run src/main.py
+```
+
+**Local Installation (Current project only):**
+```bash
+make connect
+# OR manually:
 claude mcp add private-kb -- uv --directory $(pwd) run src/main.py
 ```
 
-Then, simply ask Claude:
+Then, simply ask Claude from any project (if using global):
 
 > "Check my documents for the status of the project."
 
