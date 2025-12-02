@@ -42,9 +42,9 @@ It uses a **RAG (Retrieval-Augmented Generation)** architecture with local embed
    git clone <repo-url>
    cd claude-mcp
    uv sync
-````
+   ```
 
-2.  **Configuration**
+2. **Configuration**
     Create a `.env` file in the root directory:
     ```ini
     # MODEL CONFIGURATION
