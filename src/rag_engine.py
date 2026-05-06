@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import chromadb
 from docx import Document
@@ -9,10 +10,14 @@ from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
+# Anchor the DB to the project root so it doesn't move with the working directory.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CHROMA_DB_PATH = PROJECT_ROOT / "chroma_db"
+
 class RagEngine:
     def __init__(self):
         # Initialize persistent ChromaDB client (creates 'chroma_db' folder for storage)
-        self.chroma_client = chromadb.PersistentClient(path="./chroma_db")
+        self.chroma_client = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
         self.collection = self.chroma_client.get_or_create_collection(
             name="private_docs"
         )
@@ -29,16 +34,16 @@ class RagEngine:
             separators=["\n\n", "\n", ".", ",", " "],  # hierarchy
         )
 
-    def _read_file(self, file_path):
+    def _read_file(self, file_path: Path):
         """Extract text content from file based on extension"""
-        ext = os.path.splitext(file_path)[1].lower()
+        ext = file_path.suffix.lower()
 
         try:
             if ext == ".pdf":
-                reader = PdfReader(file_path)
+                reader = PdfReader(str(file_path))
                 return " ".join([page.extract_text() for page in reader.pages])
             elif ext == ".docx":
-                doc = Document(file_path)
+                doc = Document(str(file_path))
                 return " ".join([para.text for para in doc.paragraphs])
             elif ext in [".txt", ".md", ".py", ".json"]:
                 with open(file_path, "r", encoding="utf-8") as f:
@@ -50,44 +55,48 @@ class RagEngine:
             return None
 
     def index_files(self, directory_path):
-        print(f"Scanning directory: {directory_path}")
+        # Resolve once so all stored source paths are absolute and platform-normalized.
+        base_dir = Path(directory_path).expanduser().resolve()
+        print(f"Scanning directory: {base_dir}")
+
         count = 0
-        for root, _, files in os.walk(directory_path):
-            for file in files:
-                file_path = os.path.join(root, file)
+        for file_path in base_dir.rglob("*"):
+            if not file_path.is_file():
+                continue
 
-                # Extract text content from file
-                text = self._read_file(file_path)
-                if not text or len(text) < 50:
-                    continue
+            # Extract text content from file
+            text = self._read_file(file_path)
+            if not text or len(text) < 50:
+                continue
 
-                # Split text into chunks for vector embedding
-                chunks = self.text_splitter.split_text(text)
+            # Split text into chunks for vector embedding
+            chunks = self.text_splitter.split_text(text)
 
-                print(f"Processing {file}: {len(chunks)} chunks found.")
+            print(f"Processing {file_path.name}: {len(chunks)} chunks found.")
 
-                # Generate embeddings for each chunk
-                ids = []
-                metadatas = []
-                embeddings = []
+            # Use the resolved absolute path as a stable identifier across runs.
+            source_str = str(file_path.resolve())
 
-                for i, chunk in enumerate(chunks):
-                    # Create unique identifier for this chunk
-                    chunk_id = f"{file_path}_{i}"
+            ids = []
+            metadatas = []
+            embeddings = []
 
-                    ids.append(chunk_id)
-                    embeddings.append(self.model.encode(chunk).tolist())
-                    metadatas.append({"source": file_path, "chunk_index": i})
+            for i, chunk in enumerate(chunks):
+                chunk_id = f"{source_str}_{i}"
 
-                # Persist chunks with embeddings to ChromaDB
-                if ids:
-                    self.collection.upsert(
-                        ids=ids,
-                        embeddings=embeddings,
-                        metadatas=metadatas,
-                        documents=chunks,
-                    )
-                    count += 1
+                ids.append(chunk_id)
+                embeddings.append(self.model.encode(chunk).tolist())
+                metadatas.append({"source": source_str, "chunk_index": i})
+
+            # Persist chunks with embeddings to ChromaDB
+            if ids:
+                self.collection.upsert(
+                    ids=ids,
+                    embeddings=embeddings,
+                    metadatas=metadatas,
+                    documents=chunks,
+                )
+                count += 1
 
         print(f"Finished! Processed {count} files.")
 

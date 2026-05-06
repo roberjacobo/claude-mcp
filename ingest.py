@@ -1,9 +1,10 @@
 import os
 import sys
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Ensure we can find the src module regardless of how the script is run
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(str(Path(__file__).resolve().parent))
 
 from src.rag_engine import RagEngine
 
@@ -16,14 +17,21 @@ def main():
     load_dotenv()
 
     # 1. Validation: Check if path is configured
-    data_path = os.getenv("DATA_PATH")
-    if not data_path:
+    data_path_raw = os.getenv("DATA_PATH")
+    if not data_path_raw:
         print("Error: DATA_PATH is not defined in the .env file.")
         print("Please check your .env configuration.")
         return
 
-    if not os.path.exists(data_path):
+    # Resolve to an absolute path; handles ~, mixed slashes, and relative paths.
+    data_path = Path(data_path_raw).expanduser().resolve()
+
+    if not data_path.exists():
         print(f"Error: The path '{data_path}' does not exist.")
+        return
+
+    if not data_path.is_dir():
+        print(f"Error: The path '{data_path}' is not a directory.")
         return
 
     # 2. User Feedback
